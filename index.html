@@ -634,7 +634,7 @@ window.addEventListener('DOMContentLoaded', () => {
         { id:'tiles', type:'raster', source:'osm', paint:{'raster-opacity':0.4,'raster-saturation':-0.3,'raster-brightness-min':0.1} }
       ]
     },
-    minZoom:14, maxZoom:19,
+    minZoom:15, maxZoom:18,
     center:CAMPUS_CENTER, zoom:16.5, pitch:50, bearing:-20, antialias:true
   });
 
@@ -658,13 +658,27 @@ window.addEventListener('DOMContentLoaded', () => {
     let stepIdx = 0;
     const progressTimer = setInterval(() => {
       if (stepIdx < steps.length) {
-        loadBar.style.width = steps[stepIdx][0] + '%';
-        loadStatus.textContent = steps[stepIdx][1];
+        loadBar.style.width = steps[stepIdx] + '%';
+        loadStatus.textContent = steps[stepIdx];
         stepIdx++;
       } else {
         clearInterval(progressTimer);
         setTimeout(() => {
           document.getElementById('loading').classList.add('fade-out');
+
+          // ZOOM-OUT INTRO ANIMATION (Added from campus-3d-map.html)
+          map.jumpTo({ center:CAMPUS_CENTER, zoom:19.2, pitch:75, bearing:30 });
+          setTimeout(() => {
+            map.flyTo({
+              center: CAMPUS_CENTER,
+              zoom: window.innerWidth <= 768 ? 15.8 : 16.5,
+              pitch: 50,
+              bearing: -20,
+              duration: 4500, // Slow and graceful intro pull-back
+              easing: t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2
+            });
+          }, 80);
+
         }, 300);
       }
     }, 150);
