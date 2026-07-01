@@ -95,29 +95,6 @@
     }
     #map { position: absolute; inset: 0; }
 
-    /* ══ WELCOME TYPING OVERLAY ══ */
-    #welcome-overlay {
-      position: absolute; inset: 0; z-index: 60;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none; background: transparent;
-    }
-    #welcome-overlay .welcome-text {
-      font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: clamp(24px, 4.6vw, 52px);
-      color: var(--text); letter-spacing: .04em; text-align: center;
-      text-shadow: 0 0 30px rgba(202,162,61,0.55), 0 0 80px rgba(202,162,61,0.25);
-      opacity: 0; transition: opacity .7s ease;
-    }
-    #welcome-overlay.visible .welcome-text { opacity: 1; }
-    #welcome-overlay.fade-out { opacity: 0; transition: opacity .9s ease; }
-    #welcome-overlay .welcome-cursor {
-      display: inline-block; width: 3px; height: 1em; margin-left: 4px;
-      background: var(--accent2); vertical-align: -0.15em;
-      animation: blinkCursor .8s step-end infinite;
-    }
-    @keyframes blinkCursor { 50% { opacity: 0; } }
-
-
   
 
     /* ══ HEADER ══ */
@@ -451,9 +428,6 @@
 
 <div id="app-shell">
   <div id="map"></div>
-  <div id="welcome-overlay">
-    <div class="welcome-text" id="welcome-text-el"><span id="welcome-typed"></span><span class="welcome-cursor">&nbsp;</span></div>
-  </div>
 
   <div id="header">
     <button class="drawer-trigger" id="drawer-open-btn" title="Open Building Directory">☰</button>
@@ -799,16 +773,14 @@ window.addEventListener('DOMContentLoaded', () => {
     style:{
       version:8,
       glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-      transition: { duration: 2200, delay: 0 },
       sources:{ osm:{ type:'raster', tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], tileSize:256, attribution:'© Horus University Maps' } },
       layers:[
         { id:'bg', type:'background', paint:{'background-color':'#030f1e'} },
-        { id:'tiles', type:'raster', source:'osm', paint:{'raster-opacity':1,'raster-saturation':0,'raster-brightness-min':0} }
+        { id:'tiles', type:'raster', source:'osm', paint:{'raster-opacity':0.4,'raster-saturation':-0.3,'raster-brightness-min':0.1} }
       ]
     },
-    minZoom:0, maxZoom:18,
-    projection:'globe',
-    center:[CAMPUS_CENTER[0], 15], zoom:0.5, pitch:0, bearing:0, antialias:true
+    minZoom:17, maxZoom:18,
+    center:CAMPUS_CENTER, zoom:16.5, pitch:50, bearing:-20, antialias:true
   });
 
   const WORLD_MASK = {
@@ -820,47 +792,6 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   map.on('load', () => {
-    // Atmosphere styling for the full-earth globe view
-    map.setSky({
-      'sky-color': '#0a1b30',
-      'sky-horizon-blend': 0.5,
-      'horizon-color': '#112643',
-      'horizon-fog-blend': 0.5,
-      'fog-color': '#caa23d',
-      'fog-ground-blend': 0.5
-    });
-
-    // Slow auto-rotation of the globe while the loading screen is up
-    let globeSpinning = true;
-    function spinGlobe(timestamp) {
-      if (!globeSpinning) return;
-      const c = map.getCenter();
-      map.jumpTo({ center: [c.lng + 0.35, c.lat], zoom: map.getZoom(), pitch: 0, bearing: 0 });
-      requestAnimationFrame(spinGlobe);
-    }
-    requestAnimationFrame(spinGlobe);
-
-    // Typewriter effect for the "Welcome to Horus University" intro line
-    function typeWelcome(text, callback) {
-      const el = document.getElementById('welcome-typed');
-      const overlay = document.getElementById('welcome-overlay');
-      el.textContent = '';
-      overlay.classList.add('visible');
-      let i = 0;
-      const timer = setInterval(() => {
-        i++;
-        el.textContent = text.slice(0, i);
-        if (i >= text.length) {
-          clearInterval(timer);
-          setTimeout(() => {
-            overlay.classList.remove('visible');
-            overlay.classList.add('fade-out');
-            setTimeout(() => { if (callback) callback(); }, 700);
-          }, 900);
-        }
-      }, 65);
-    }
-
     const loadBar = document.getElementById('load-bar');
     const loadStatus = document.getElementById('load-status');
     const steps = [
@@ -880,105 +811,25 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           document.getElementById('loading').classList.add('fade-out');
 
-          // Stop the globe auto-spin
-          globeSpinning = false;
-
-          // Position the drone centered on screen, ready to "lead" the approach
-          droneWrap.classList.remove('hovering', 'orbiting-building', 'flying-to-building');
-          droneWrap.style.animation = 'none';
-          droneWrap.style.transition = 'opacity 1s ease, transform 1s ease';
-          droneWrap.style.right = 'auto';
-          droneWrap.style.left = '50%';
-          droneWrap.style.top = '46%';
-          droneWrap.style.transform = 'translate(-50%, -50%) scale(0.55)';
-          droneWrap.style.opacity = '0';
-
-          // FULL-EARTH → CAMPUS INTRO ANIMATION
-          // Step 1: one last graceful rotation toward campus longitude while still a true-color globe
-          map.flyTo({
-            center: [CAMPUS_CENTER[0], CAMPUS_CENTER[1] + 8],
-            zoom: 2.2,
-            pitch: 0,
-            bearing: 0,
-            duration: 2600,
-            essential: true
-          });
-
-          // Fade the drone in, hovering front-and-center, while the "Welcome" text types out
+          // ZOOM-OUT INTRO ANIMATION (Added from campus-3d-map.html)
+          map.jumpTo({ center:CAMPUS_CENTER, zoom:19.2, pitch:75, bearing:30 });
           setTimeout(() => {
-            droneWrap.style.opacity = '1';
-            droneWrap.style.transform = 'translate(-50%, -50%) scale(1.15)';
-            droneWrap.querySelectorAll('.rotor').forEach(r => r.style.animationDuration = '0.1s');
-          }, 400);
-
-          typeWelcome('Welcome to Horus University', () => {
-
-            // Step 2: apply the app's signature tint/desaturation to the globe imagery
-            map.setPaintProperty('tiles', 'raster-opacity', 0.4);
-            map.setPaintProperty('tiles', 'raster-saturation', -0.3);
-            map.setPaintProperty('tiles', 'raster-brightness-min', 0.1);
-            map.setPaintProperty('outside-mask', 'fill-opacity', 0.9);
-
-            // Drone leads the dive: pushes forward toward the campus, speed lines trailing
-            droneWrap.style.transition = 'top 3.2s cubic-bezier(.4,0,.2,1), left 3.2s cubic-bezier(.4,0,.2,1), transform 3.2s cubic-bezier(.4,0,.2,1)';
-            droneWrap.style.top = '36%';
-            droneWrap.style.transform = 'translate(-50%, -50%) scale(0.8)';
-            droneWrap.querySelectorAll('.rotor').forEach(r => r.style.animationDuration = '0.06s');
-            const speedLines = droneWrap.querySelector('#drone-speed-lines');
-            if (speedLines) speedLines.style.opacity = '1';
-
-            // Dive down out of orbit toward the campus, globe morphs into flat map as zoom increases
             map.flyTo({
               center: CAMPUS_CENTER,
-              zoom: 19.2,
-              pitch: 75,
-              bearing: 30,
-              duration: 3200,
-              curve: 1.6,
-              speed: 0.9,
-              essential: true
+              zoom: window.innerWidth <= 768 ? 15.8 : 16.5,
+              pitch: 50,
+              bearing: -20,
+              duration: 4500, // Slow and graceful intro pull-back
+              easing: t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2
             });
-
-            // Step 3: settle into the normal orbit/pull-back view over the campus, drone returns home
-            setTimeout(() => {
-              map.flyTo({
-                center: CAMPUS_CENTER,
-                zoom: window.innerWidth <= 768 ? 15.8 : 16.5,
-                pitch: 50,
-                bearing: -20,
-                duration: 4500, // Slow and graceful intro pull-back
-                easing: t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2
-              });
-
-              const speedLines2 = droneWrap.querySelector('#drone-speed-lines');
-              if (speedLines2) speedLines2.style.opacity = '0';
-              droneWrap.style.transition = 'top 4.2s cubic-bezier(.4,0,.2,1), left 4.2s cubic-bezier(.4,0,.2,1), transform 4.2s cubic-bezier(.4,0,.2,1)';
-              droneWrap.style.left = (window.innerWidth - 130 - 72) + 'px';
-              droneWrap.style.top = '72px';
-              droneWrap.style.transform = 'scale(1)';
-
-              setTimeout(() => {
-                droneWrap.style.transition = 'none';
-                droneWrap.style.right = '72px';
-                droneWrap.style.left = 'auto';
-                droneWrap.style.top = '72px';
-                droneWrap.style.transform = '';
-                droneWrap.style.animation = '';
-                droneWrap.querySelectorAll('.rotor').forEach(r => r.style.animationDuration = '');
-                void droneWrap.offsetWidth;
-                droneWrap.classList.add('hovering');
-                // restore the base transition string used for building fly-tos
-                droneWrap.style.transition = 'top 4.2s cubic-bezier(.4,0,.2,1), left 4.2s cubic-bezier(.4,0,.2,1), right 0.1s';
-              }, 4300);
-            }, 3400);
-          });
+          }, 80);
 
         }, 300);
       }
     }, 150);
 
     map.addSource('world-mask', { type:'geojson', data:WORLD_MASK });
-    map.addLayer({ id:'outside-mask', type:'fill', source:'world-mask', paint:{ 'fill-color':'#030f1e', 'fill-opacity':0 } });
+    map.addLayer({ id:'outside-mask', type:'fill', source:'world-mask', paint:{ 'fill-color':'#030f1e', 'fill-opacity':0.9 } });
 
     map.addSource('campus', { type:'geojson', data:GEOJSON });
 
@@ -1247,7 +1098,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-3d').addEventListener('click', () => {
       is3D = !is3D;
-      map.easeTo({ pitch: is3D ? 50 : 0, bearing: is3D ? -60 : 0, duration: 1000 });
+      map.easeTo({ pitch: is3D ? 50 : 0, bearing: is3D ? -20 : 0, duration: 600 });
       document.getElementById('btn-3d').textContent = is3D ? '2D' : '3D';
     });
     document.getElementById('btn-reset').addEventListener('click', () => {
@@ -1261,6 +1112,3 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
-
-
