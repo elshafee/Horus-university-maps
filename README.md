@@ -108,7 +108,7 @@ This project is proprietary and created for Horus University. All rights reserve
 
 ## 📧 Contact & Support
 
-For technical support or inquiries, please contact the development team through the official Horus University channels.
+For technical support or inquiries, please contact me.
 
 ---
 
