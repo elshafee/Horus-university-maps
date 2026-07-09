@@ -121,13 +121,13 @@
     border: 1px solid var(--hu-border);
     border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    /* box-shadow: 0 12px 40px rgba(0,0,0,0.5); */
     transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
   }
   #hu-map-card:hover, #hu-map-card:focus-visible {
     transform: translateY(-4px);
     border-color: rgba(202,162,61,0.65);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 45px rgba(202,162,61,0.2);
+    box-shadow:  0 0 25px rgba(202,162,61,0.2);
   }
 
   /* ── SCENE CONTAINER ── */
@@ -206,7 +206,7 @@
     display: flex; align-items: flex-start; gap: 8px;
     background: rgba(10,27,48,0.75); backdrop-filter: blur(4px);
     padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(202,162,61,0.3);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    /* box-shadow: 0 4px 10px rgba(0,0,0,0.5); */
     color: var(--hu-gold-light);
   }
   .hu-telemetry-data svg { margin-top: 2px; }
@@ -242,7 +242,7 @@
   .hu-3d-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--hu-gold-light); }
   .hu-divider { width: 100%; height: 1px; background: rgba(202,162,61,0.2); }
 
-  .hu-compass { position: absolute; right: 14px; top: 12px; width: 28px; height: 28px; z-index: 5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .hu-compass { position: absolute; right: 14px; top: 12px; width: 28px; height: 28px; z-index: 5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); }
 
   /* ── TARGETING RETICLE & PIN ── */
   .hu-center-pin-container {
@@ -345,17 +345,34 @@
     const loader = document.getElementById('hu-map-loading');
     const closeBtn = document.getElementById('hu-map-close');
 
-    function openMap() {
+function openMap() {
       modal.classList.add('open');
       document.body.style.overflow = 'hidden';
-      if (!frame.src) frame.src = MAP_SRC;
+      frame.src = MAP_SRC;
+
+      // Request native full screen on the modal container
+      if (modal.requestFullscreen) {
+        modal.requestFullscreen().catch(err => console.warn("Fullscreen denied:", err));
+      } else if (modal.webkitRequestFullscreen) { /* Safari fallback */
+        modal.webkitRequestFullscreen();
+      }
     }
+
     function closeMap() {
       modal.classList.remove('open');
       document.body.style.overflow = '';
       frame.src = '';
       frame.classList.remove('ready');
       loader.style.display = 'flex';
+
+      // Exit native full screen when the user closes the map
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari fallback */
+          document.webkitExitFullscreen();
+        }
+      }
     }
 
     frame.addEventListener('load', () => {

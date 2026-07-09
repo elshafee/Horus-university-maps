@@ -7,7 +7,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    
+    /* horus/assets */
     /* ══ LOGO-DRIVEN PREMIUM THEME (DEEP NAVY & HORUS GOLD) ══ */
     :root {
       --bg: #030f1e;
@@ -630,7 +630,7 @@
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>
 
-// Complete, Integrated, Non-duplicated Dataset (Faculties, Infrastructure, Gates, and Cafes)
+// Complete, Integrated, Non-duplicated Dataset (Faculties, Infrastructure, Gates, and Cafes)/Users/ahmadkhaled/Documents/GitHub/Horus-university-maps/horus/assets/phthy.jpg
 const BUILDINGS = [
   { id:"faculty-of-engineering",            name:"Faculty of Engineering",            height:16, color:"#caa23d", roofColor:"#112643", type:"Academic",  image:"assets/eng.png",                         desc:"Advanced Engineering spaces, high-computing laboratories, and research workshops.", link:"https://eng.horus.edu.eg/", established:"2018", capacity:"+6,000 Students", depts:"Artificial Intelligence, Civil Engineering, Electrical Engineering, Biomedical Engineering, Architecture Engineering, Computer & Systems Engineering, Sustainable Architecture Engineering, Mechanical Engineering (Mechatronics)" },
   { id:"faculty-of-medicine",               name:"Faculty of Medicine",               height:16, color:"#1a5f7a", roofColor:"#0a1b30", type:"Medical",   image:"assets/med.jpg",                         desc:"Medical educational frameworks, anatomy visualization centers, and direct clinical tracks.", link:"https://med.horus.edu.eg/", established:"2021", capacity:"+3,000 Students", depts:"Human Anatomy and Embryology, Histology and Cell biology, Medical Physiology, Clinical Pharmacology, Medical Biochemistry and Molecular Biology, Pathology, Medical Microbiology and Immunology and Parasitology" },
@@ -966,7 +966,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     // Returning visitors within the same session skip straight to the settled campus view
-    const skipIntro = sessionStorage.getItem('huIntroPlayed') === '1';
+    const skipIntro = false;
     let introSkipped = skipIntro;
     let progressTimer;
 
@@ -1160,7 +1160,7 @@ window.addEventListener('DOMContentLoaded', () => {
       [100, 'System Operational']
     ];
     let stepIdx = 0;
-    progressTimer = setInterval(() => {
+      progressTimer = setInterval(() => {
       if (introSkipped) { clearInterval(progressTimer); return; }
       if (stepIdx < steps.length) {
         loadBar.style.width = steps[stepIdx] + '%';
@@ -1168,7 +1168,6 @@ window.addEventListener('DOMContentLoaded', () => {
         stepIdx++;
       } else {
         clearInterval(progressTimer);
-        sessionStorage.setItem('huIntroPlayed', '1');
         setTimeout(() => {
           if (introSkipped) return;
           document.getElementById('loading').classList.add('fade-out');
