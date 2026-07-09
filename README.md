@@ -15,12 +15,14 @@
 
 ## 🚀 Quick Access
 
-Access the interactive 3D campus map now:
+<div align="center">
 
 | Platform | Link |
 |----------|------|
 | **Official Horus University** | [horus.edu.eg](https://horus.edu.eg) |
 | **GitHub Pages (Self-Hosted)** | [elshafee.github.io/Horus-university-maps](https://elshafee.github.io/Horus-university-maps) |
+
+</div>
 
 ---
 
@@ -108,7 +110,7 @@ This project is proprietary and created for Horus University. All rights reserve
 
 ## 📧 Contact & Support
 
-For technical support or inquiries, please contact me.
+For technical support or inquiries, please contact the development team through the official Horus University channels.
 
 ---
 
